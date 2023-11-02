@@ -163,6 +163,7 @@ data "aws_iam_policy_document" "example_product_launch_constraint_policy" {
       "apprunner:*",
       "ec2:*",
       "secretsmanager:*",
+      "iam:*",
       "iam:Create*",
       "iam:Delete*",
       "iam:Tag*",
