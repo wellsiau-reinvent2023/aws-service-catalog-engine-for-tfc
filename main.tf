@@ -81,3 +81,20 @@ module "example_product" {
   tfc_provider_arn = module.terraform_cloud_reference_engine.oidc_provider_arn
 
 }
+
+module "apprunner_product" {
+  source = "./apprunner-product"
+
+  # ARNs of Lambda functions that need to be able to assume the IAM Launch Role
+  parameter_parser_role_arn  = module.terraform_cloud_reference_engine.parameter_parser_role_arn
+  send_apply_lambda_role_arn = module.terraform_cloud_reference_engine.send_apply_lambda_role_arn
+
+  # AWS Service Catalog portfolio you would like to add this product to
+  service_catalog_portfolio_ids = [aws_servicecatalog_portfolio.portfolio.id]
+
+  # Variables for authentication to AWS via Dynamic Credentials
+  tfc_hostname     = module.terraform_cloud_reference_engine.tfc_hostname
+  tfc_organization = module.terraform_cloud_reference_engine.tfc_organization
+  tfc_provider_arn = module.terraform_cloud_reference_engine.oidc_provider_arn
+
+}
