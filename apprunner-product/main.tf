@@ -169,7 +169,8 @@ data "aws_iam_policy_document" "example_product_launch_constraint_policy" {
       "iam:Get*",
       "iam:List*",
       "iam:PassRole",
-      "iam:AttachRolePolicy"
+      "iam:AttachRolePolicy",
+      "iam:DetachRolePolicy"
     ]
 
     resources = ["*"]
