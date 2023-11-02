@@ -25,7 +25,7 @@ resource "aws_s3_bucket" "artifact_bucket" {
 
 resource "aws_s3_object" "artifact" {
   bucket = aws_s3_bucket.artifact_bucket.id
-  key    = "product.tar.gz"
+  key    = "apprunner_product_v2.tar.gz"
   source = "${path.module}/apprunner_product.tar.gz"
   etag   = filemd5("${path.module}/apprunner_product.tar.gz")
 }
@@ -51,15 +51,6 @@ locals {
   class_case_product_name                        = local._product_name_convert_kebab_case_to_class_case
 }
 
-resource "aws_servicecatalog_tag_option_resource_association" "example_product_managed_by" {
-  resource_id   = aws_servicecatalog_product.example.id
-  tag_option_id = aws_servicecatalog_tag_option.product_managed_by.id
-}
-
-resource "aws_servicecatalog_tag_option" "product_managed_by" {
-  key   = "ManagedBy"
-  value = "tfc"
-}
 
 resource "aws_servicecatalog_tag_option_resource_association" "example_product_name" {
   resource_id   = aws_servicecatalog_product.example.id
@@ -164,6 +155,27 @@ data "aws_iam_policy_document" "example_product_launch_constraint_policy" {
   version = "2012-10-17"
 
   statement {
+    sid = "AppRunnerAccess"
+
+    effect = "Allow"
+
+    actions = [
+      "apprunner:*",
+      "ec2:*",
+      "secretsmanager:*",
+      "iam:Create*",
+      "iam:Delete*",
+      "iam:Tag*",
+      "iam:Get*",
+      "iam:List*",
+      "iam:PassRole",
+      "iam:AttachRolePolicy"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
     sid = "S3AccessToProvisioningObjects"
 
     effect = "Allow"
@@ -179,22 +191,6 @@ data "aws_iam_policy_document" "example_product_launch_constraint_policy" {
       variable = "s3:ExistingObjectTag/servicecatalog:provisioning"
       values   = ["true"]
     }
-  }
-
-  statement {
-    sid = "AllowCreationOfBucketsToDistributeProvisioningArtifact"
-
-    effect = "Allow"
-
-    actions = [
-      "s3:CreateBucket*",
-      "s3:DeleteBucket*",
-      "s3:Get*",
-      "s3:List*",
-      "s3:PutBucketTagging"
-    ]
-
-    resources = ["arn:aws:s3:::*"]
   }
 
   statement {

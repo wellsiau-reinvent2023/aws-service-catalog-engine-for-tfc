@@ -98,3 +98,71 @@ module "apprunner_product" {
   tfc_provider_arn = module.terraform_cloud_reference_engine.oidc_provider_arn
 
 }
+
+# Stores module outputs to SSM parameter 
+resource "aws_ssm_parameter" "parameter_parser_role_arn" {
+  name  = "/tfc/tre/parameter_parser_role_arn"
+  type  = "String"
+  value = module.terraform_cloud_reference_engine.parameter_parser_role_arn
+}
+
+resource "aws_ssm_parameter" "send_apply_lambda_role_arn" {
+  name  = "/tfc/tre/send_apply_lambda_role_arn"
+  type  = "String"
+  value = module.terraform_cloud_reference_engine.send_apply_lambda_role_arn
+}
+
+resource "aws_ssm_parameter" "tfc_hostname" {
+  name  = "/tfc/tre/tfc_hostname"
+  type  = "String"
+  value = module.terraform_cloud_reference_engine.tfc_hostname
+}
+
+resource "aws_ssm_parameter" "tfc_organization" {
+  name  = "/tfc/tre/tfc_organization"
+  type  = "String"
+  value = module.terraform_cloud_reference_engine.tfc_organization
+}
+
+resource "aws_ssm_parameter" "oidc_provider_arn" {
+  name  = "/tfc/tre/oidc_provider_arn"
+  type  = "String"
+  value = module.terraform_cloud_reference_engine.oidc_provider_arn
+}
+
+# Stores the Terraform Cloud variable sets
+resource "tfe_project" "service_catalog" {
+  organization = var.tfc_organization
+  name = var.tfc_team
+}
+
+resource "tfe_variable_set" "tfe_var_set" {
+  name         = "Dynamic Cred Variable Sets DOP315"
+  description  = "AWS dynamic credentials applied to service catalog workspaces."
+  organization = var.tfc_organization
+}
+
+resource "tfe_project_variable_set" "tfc_gcp_oidc_var_set" {
+  project_id      = tfe_project.service_catalog.id
+  variable_set_id = tfe_variable_set.tfe_var_set.id
+}
+
+resource "tfe_variable" "enable_aws_provider_auth" {
+  variable_set_id = tfe_variable_set.tfe_var_set.id
+
+  key      = "TFC_AWS_PROVIDER_AUTH"
+  value    = "true"
+  category = "env"
+
+  description = "Enable the Workload Identity integration for AWS."
+}
+
+resource "tfe_variable" "tfc_aws_role_arn" {
+  variable_set_id = tfe_variable_set.tfe_var_set.id
+
+  key      = "TFC_AWS_RUN_ROLE_ARN"
+  value    = module.terraform_cloud_reference_engine.tfc_dynamic_provider_role_arn
+  category = "env"
+
+  description = "The AWS role arn runs will use to authenticate."
+}

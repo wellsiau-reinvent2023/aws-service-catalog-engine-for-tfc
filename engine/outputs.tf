@@ -20,3 +20,7 @@ output "tfc_organization" {
 output "tfc_hostname" {
   value = var.tfc_hostname
 }
+
+output "tfc_dynamic_provider_role_arn" {
+  value = aws_iam_role.tfc_role.arn
+}
