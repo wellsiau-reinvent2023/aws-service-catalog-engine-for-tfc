@@ -2,6 +2,13 @@
 # SPDX-License-Identifier: MPL-2.0
 
 terraform {
+  cloud {
+    organization = "aws-reinvent-demo"
+    workspaces {
+      name = "tfc_re_bootstrap"
+    }
+  }
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -26,8 +33,13 @@ provider "aws" {
   }
 }
 
+data "aws_secretsmanager_secret_version" "tfe_token_secret" {
+  secret_id = "terraform-cloud-credentials-for-bootstrap"
+}
+
 provider "tfe" {
   hostname = var.tfc_hostname
+  token    = data.aws_secretsmanager_secret_version.tfe_token_secret.secret_string
 }
 
 # This module provisions the Terraform Cloud Reference Engine. If you would like to provision the Reference Engine
