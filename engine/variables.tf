@@ -9,7 +9,7 @@ variable "tfc_organization" {
 variable "tfc_team" {
   type        = string
   description = "Name of the TFC team to use to provision infrastructure with in TFC"
-  default     = "aws-service-catalog"
+  default     = "AWS-Service-Catalog"
 }
 
 variable "enable_xray_tracing" {

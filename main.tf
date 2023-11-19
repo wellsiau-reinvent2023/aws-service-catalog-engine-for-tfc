@@ -1,11 +1,9 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MPL-2.0
-
 terraform {
   cloud {
     organization = "aws-reinvent-demo"
     workspaces {
-      name = "tfc_re_bootstrap"
+      name = "TFE-ServiceCatalog-Bootstrap"
+      project = "TRE Bootstrap"
     }
   }
   
@@ -55,31 +53,6 @@ module "terraform_cloud_reference_engine" {
   enable_xray_tracing              = var.enable_xray_tracing
   token_rotation_interval_in_days  = var.token_rotation_interval_in_days
   terraform_version                = var.terraform_version
-}
-
-# Creates an AWS Service Catalog Portfolio to house the example product
-resource "aws_servicecatalog_portfolio" "portfolio" {
-  name          = "TFC Example Portfolio"
-  description   = "Example Portfolio created via AWS Service Catalog Engine for TFC"
-  provider_name = "HashiCorp Examples"
-}
-
-# An example product
-module "example_product" {
-  source = "./example-product"
-
-  # ARNs of Lambda functions that need to be able to assume the IAM Launch Role
-  parameter_parser_role_arn  = module.terraform_cloud_reference_engine.parameter_parser_role_arn
-  send_apply_lambda_role_arn = module.terraform_cloud_reference_engine.send_apply_lambda_role_arn
-
-  # AWS Service Catalog portfolio you would like to add this product to
-  service_catalog_portfolio_ids = [aws_servicecatalog_portfolio.portfolio.id]
-
-  # Variables for authentication to AWS via Dynamic Credentials
-  tfc_hostname     = module.terraform_cloud_reference_engine.tfc_hostname
-  tfc_organization = module.terraform_cloud_reference_engine.tfc_organization
-  tfc_provider_arn = module.terraform_cloud_reference_engine.oidc_provider_arn
-
 }
 
 # Stores module outputs to SSM parameter 
